@@ -9,7 +9,6 @@ namespace FirewallManager.CommandHandlers
 {
     public static class WhitelistCommands
     {
-        // Try initialize database (create JSON file if it doesn't exist)
         private static readonly string FilePath = Path.Combine("IPsJSON", "Whitelist.json");
         public static void InitializeDatabase()
         {
@@ -27,9 +26,11 @@ namespace FirewallManager.CommandHandlers
                 Console.WriteLine($"An error occurred while initializing the whitelist database:\n {ex.Message}");
             }
         }
+
+
+        //
     public static void WhitelistIP(string ipAddress)
         {
-            // Cross-check if the IP is already in the blocked list
             if (BlockCommands.IsIPBlocked(ipAddress))
             {
                 Console.WriteLine($"Cannot whitelist IP {ipAddress} because it is already blocked.");
@@ -46,9 +47,13 @@ namespace FirewallManager.CommandHandlers
                 IPAddress = ipAddress,
                 WhitelistedAt = DateTime.Now
             });
+            string action = "allow";
+            FWModifier.AddFirewallRule($"@White Listed{ipAddress}", ipAddress, action);
             SaveWhitelistedIPs(whitelistedIPs);
-            Console.WriteLine($"Whitelisted IP: {ipAddress}");
         }
+
+
+        //
         public static void RemoveWhitelisted(string ipAddress)
         {
             var whitelistedIPs = LoadWhitelistedIPs();
@@ -56,10 +61,13 @@ namespace FirewallManager.CommandHandlers
             SaveWhitelistedIPs(whitelistedIPs);
 
             if (removedCount > 0)
-                Console.WriteLine($"Removed IP from whitelist: {ipAddress}");
+                FWModifier.RemoveFirewallRuleByIP(ipAddress);
             else
-                Console.WriteLine($"IP {ipAddress} was not found in the whitelist.");
+                Console.WriteLine($"IP: {ipAddress} was not found in the whitelist.");
         }
+
+
+        //
         public static void ShowWhitelisted()
         {
             var whitelistedIPs = LoadWhitelistedIPs();
@@ -69,17 +77,26 @@ namespace FirewallManager.CommandHandlers
                 Console.WriteLine($"- {ip.IPAddress} (Whitelisted at {ip.WhitelistedAt})");
             }
         }
+
+
+        //
         public static bool IsIPWhitelisted(string ipAddress)
         {
             var whitelistedIPs = LoadWhitelistedIPs();
             return whitelistedIPs.Exists(ip => ip.IPAddress == ipAddress);
         }
+
+
+        //
         public static List<WhitelistIP> LoadWhitelistedIPs()
         {
             var json = File.ReadAllText(FilePath);
             return JsonSerializer.Deserialize<List<WhitelistIP>>(json);
         }
-        private static void SaveWhitelistedIPs(List<WhitelistIP> whitelistedIPs)
+
+
+        //
+        public static void SaveWhitelistedIPs(List<WhitelistIP> whitelistedIPs)
         {
             var json = JsonSerializer.Serialize(whitelistedIPs, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(FilePath, json);

@@ -21,7 +21,9 @@ namespace FirewallManager.CommandHandlers
             }
         }
 
-        public static void DormantMode()
+
+        //
+        public static void DormantMode(bool reload)
         {
             if (isActive)
             {
@@ -29,12 +31,14 @@ namespace FirewallManager.CommandHandlers
                 Console.WriteLine("Switching to Dormant Mode. Stopping monitoring.");
                 FWMonitor.StopMonitoring();
             }
-            else
+            else if (!reload)
             {
                 Console.WriteLine("Already in Dormant Mode.");
             }
         }
 
+
+        //
         public static void CurrentMode()
         {
             Console.WriteLine($"Current mode: {(isActive ? "Active Mode" : "Dormant Mode")}");

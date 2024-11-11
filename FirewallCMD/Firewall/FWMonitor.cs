@@ -10,8 +10,9 @@ namespace FirewallManager
     {
         private static EventLog eventLog;
         private static readonly Dictionary<string, List<DateTime>> failedLogons = new Dictionary<string, List<DateTime>>();
-        private const int MaxAttempts = 10;
-        private static readonly TimeSpan TimeWindow = TimeSpan.FromMinutes(60);
+
+        public static int MaxAttempts { get; set; } = 10;
+        public static TimeSpan MaxTime { get; set; } = TimeSpan.FromMinutes(60);
 
         public static void StartMonitoring()
         {
@@ -25,6 +26,8 @@ namespace FirewallManager
             eventLog.EnableRaisingEvents = true;
         }
 
+
+        //
         public static void StopMonitoring()
         {
             if (eventLog != null)
@@ -36,9 +39,11 @@ namespace FirewallManager
             }
         }
 
+
+        //
         private static void OnEntryWritten(object sender, EntryWrittenEventArgs e)
         {
-            if (e.Entry.InstanceId == 4625) // Failed logon attempt
+            if (e.Entry.InstanceId == 4625)
             {
                 string message = e.Entry.Message;
                 string ipAddress = ExtractField(message, "Source Network Address:");
@@ -67,35 +72,33 @@ namespace FirewallManager
             }
         }
 
+
+        //
         private static void TrackFailedLogon(string ipAddress)
         {
             DateTime currentTime = DateTime.Now;
-
-            // Add a new entry for this IP if it doesn't exist
             if (!failedLogons.ContainsKey(ipAddress))
             {
                 failedLogons[ipAddress] = new List<DateTime>();
             }
-
-            // Add the current failed attempt to the list
             failedLogons[ipAddress].Add(currentTime);
-
-            // Remove any attempts that are outside the time window
-            failedLogons[ipAddress] = failedLogons[ipAddress].Where(time => currentTime - time <= TimeWindow).ToList();
+            failedLogons[ipAddress] = failedLogons[ipAddress].Where(time => currentTime - time <= MaxTime).ToList();
         }
 
+
+        //
         private static bool ShouldBlockIP(string ipAddress)
         {
-            // Check if the number of attempts exceeds the threshold within the time window
             if (failedLogons.ContainsKey(ipAddress) && failedLogons[ipAddress].Count >= MaxAttempts)
             {
-                // Remove the IP from tracking after blocking
                 failedLogons.Remove(ipAddress);
                 return true;
             }
             return false;
         }
 
+
+        //
         private static string ExtractField(string message, string fieldLabel)
         {
             int index = message.IndexOf(fieldLabel);
