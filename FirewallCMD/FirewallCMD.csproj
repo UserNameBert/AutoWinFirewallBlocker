@@ -79,7 +79,7 @@
   <ItemGroup>
     <Compile Include="CommandHandlers\BlockCommands.cs" />
     <Compile Include="CommandHandlers\ConsoleCommands.cs" />
-    <Compile Include="CommandHandlers\FirewallSync.cs" />
+    <Compile Include="Firewall\FirewallSync.cs" />
     <Compile Include="Firewall\FWModifier.cs" />
     <Compile Include="Firewall\FWMonitor.cs" />
     <Compile Include="IPsJSON\BlockedIP.cs" />
