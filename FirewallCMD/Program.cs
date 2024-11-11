@@ -10,8 +10,11 @@ namespace FirewallManager
         {
             BlockCommands.InitializeDatabase();
             WhitelistCommands.InitializeDatabase();
+
             Console.WriteLine("\nChecking firewall for missing blocked IPs stored in Blocked.json.");
             FirewallSync.SyncFirewallWithBlockedIPs();
+            FirewallSync.SyncFirewallWithWhitelistedIPs();
+
             Thread.Sleep(2000);
             BlockCommands.ShowBlockedIPs();
             WhitelistCommands.ShowWhitelisted();
