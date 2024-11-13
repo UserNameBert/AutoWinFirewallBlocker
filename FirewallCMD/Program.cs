@@ -8,6 +8,8 @@ namespace FirewallManager
     {
         static void Main()
         {
+            Console.WriteLine($"Version: {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}");
+
             BlockCommands.InitializeDatabase();
             WhitelistCommands.InitializeDatabase();
 

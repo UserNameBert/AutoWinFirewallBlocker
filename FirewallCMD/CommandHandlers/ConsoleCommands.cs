@@ -21,6 +21,8 @@ namespace FirewallManager
             { "show whitelisted", _ => WhitelistCommands.ShowWhitelisted() },
             { "remove whitelisted", ip => WhitelistCommands.RemoveWhitelisted(ip) },
             { "reload", _ => ReloadAll() },
+            { "changeMA", input => ChangeMaxAttempts(input) },
+            { "changeMT", input => ChangeMaxTime(input) },
         };
 
 
@@ -30,8 +32,15 @@ namespace FirewallManager
             string command = GetCommand(input, out string parameter);
             if (commandActions.ContainsKey(command))
             {
-                commandActions[command](parameter);
-                return command == "exit";
+                try
+                {
+                    commandActions[command](parameter);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error executing command '{command}': {ex.Message}");
+                }
+                return command.Equals("exit", StringComparison.OrdinalIgnoreCase);
             }
             Console.WriteLine("Unknown command. Type 'help' for a list of commands.");
             return false;
@@ -44,7 +53,7 @@ namespace FirewallManager
             parameter = string.Empty;
             foreach (var command in commandActions.Keys)
             {
-                if (input.StartsWith(command))
+                if (input.StartsWith(command, StringComparison.OrdinalIgnoreCase))
                 {
                     parameter = input.Substring(command.Length).Trim();
                     return command;
@@ -52,13 +61,13 @@ namespace FirewallManager
             }
             int spaceIndex = input.IndexOf(' ');
             if (spaceIndex == -1) return input;
-
             string singleWordCommand = input.Substring(0, spaceIndex);
             parameter = input.Substring(spaceIndex + 1).Trim();
             return singleWordCommand;
         }
 
 
+        //
         private static void ReloadAll() 
         {
             Console.WriteLine("Reloading all .JSONs.");
@@ -67,7 +76,40 @@ namespace FirewallManager
             WhitelistCommands.SaveWhitelistedIPs(WhitelistCommands.LoadWhitelistedIPs());
 
             BlockCommands.InitializeDatabase();
+            FirewallSync.SyncFirewallWithBlockedIPs();
+
             WhitelistCommands.InitializeDatabase();
+            FirewallSync.SyncFirewallWithWhitelistedIPs();
+        }
+
+
+        //
+        public static void ChangeMaxAttempts(string input)
+        {
+            if (int.TryParse(input, out int maxAttempts) && maxAttempts > 1)
+            {
+                FWMonitor.MaxAttempts = maxAttempts;
+                Console.WriteLine($"Max logon attempts has been updated to: {maxAttempts}.");
+            }
+            else
+            {
+                Console.WriteLine("Invaild input, use a number greater than 1.");
+            }
+        }
+
+
+        //
+        public static void ChangeMaxTime(string input)
+        {
+            if(int.TryParse(input,out int maxMinutes) && maxMinutes > 1)
+            {
+                FWMonitor.MaxTime = TimeSpan.FromMinutes(maxMinutes);
+                Console.WriteLine($"Max time allowed from first log on attempt has been updated to: {maxMinutes}");
+            }
+            else
+            {
+                Console.WriteLine("Invailid input, use a number greater than 1");
+            }
         }
     }
 }

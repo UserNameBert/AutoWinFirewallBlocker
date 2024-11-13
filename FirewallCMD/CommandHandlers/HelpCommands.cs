@@ -23,9 +23,9 @@ namespace FirewallManager.CommandHandlers
             { "separator3", "" },
 
             { "- reload", "Reloads the .JSON files. Also sets the mode back to dormant." },
-            //{ "- changeMA <intger>", "Allows you to specify the max attempts before an IP gets blocked." },
-            //{ "- changeMT <minutes>", "Allows you to specify the max amount of time allowed uptill the failed attempts counter is reset."},
-            //{ "separator4", "" },
+            { "- changeMA <intger>", "Allows you to specify the max attempts before an IP gets blocked." },
+            { "- changeMT <minutes>", "Allows you to specify the max amount of time allowed uptill the failed attempts counter is reset."},
+            { "separator4", "" },
 
             { "- help", "Shows available commands." },
             { "- cls", "Clears the terminal screen." },
